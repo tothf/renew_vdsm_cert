@@ -19,10 +19,10 @@ host_subject=$(ssh -i /etc/pki/ovirt-engine/keys/engine_id_rsa root@${host_to_re
 host_vds_unique_id=$(ssh -i /etc/pki/ovirt-engine/keys/engine_id_rsa root@${host_to_renew} "vdsm-tool vdsm-id")
 host_vds_id=$(su - postgres -c "psql engine --csv -c \"select vds_id from vds_static where vds_unique_id='${host_vds_unique_id}'\" |tail -1")
 host_vds_host_name=$(su - postgres -c "psql engine --csv -c \"select host_name from vds_static where vds_id='${host_vds_id}'\" |tail -1")
-if [ "${host_subject/${host_vds_host_name}/}" != ${host_subject} ]; then
+ip_regexp='^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'
+if [ "${host_subject/${host_vds_host_name}/}" == ${host_subject} ] || [[ ${host_vds_host_name} =~ ${ip_regexp} ]]; then
         san_type=DNS
-        regexp='[0-9.]'
-        if [[ ${host_vds_host_name} =~ ${regexp} ]]; then
+        if [[ ${host_vds_host_name} =~ ${ip_regexp} ]]; then
                 san_type=IP
         fi
         altname=x
